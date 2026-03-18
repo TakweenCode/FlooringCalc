@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: stats
+    // Document ID: calculator
+    // Fields:
+    //   - usageCount: number (required) - The total number of times the calculator has been used.
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidCounterUpdate() {
+      // Allow update only if 'usageCount' is the ONLY field changing
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usageCount']) &&
+             // And the change is exactly +1
+             request.resource.data.usageCount == resource.data.usageCount + 1;
+    }
+
+    match /stats/{docId} {
+      // Allow anyone to read the counter
+      allow read: if docId == 'calculator';
+      
+      // Allow anyone to create it if it doesn't exist, starting at 1
+      allow create: if docId == 'calculator' &&
+                       hasOnlyAllowedFields(['usageCount']) &&
+                       request.resource.data.usageCount == 1;
+                       
+      // Allow anyone to increment it by exactly 1
+      allow update: if docId == 'calculator' && isValidCounterUpdate();
+      
+      // Never allow deletion
+      allow delete: if false;
+    }
+  }
+}

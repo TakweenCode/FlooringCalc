@@ -1,0 +1,24 @@
+{
+  "entities": {
+    "CalculatorStats": {
+      "title": "CalculatorStats",
+      "description": "Tracks the usage statistics of the calculator.",
+      "type": "object",
+      "properties": {
+        "usageCount": {
+          "type": "number",
+          "description": "The total number of times the calculator has been used."
+        }
+      },
+      "required": ["usageCount"]
+    }
+  },
+  "firestore": {
+    "/stats/calculator": {
+      "schema": {
+        "$ref": "#/entities/CalculatorStats"
+      },
+      "description": "Global statistics for the calculator."
+    }
+  }
+}
